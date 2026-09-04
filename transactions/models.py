@@ -8,7 +8,8 @@ class transaction(models.Model):
     choix_type = [
         ('envoi','Envoi'),
         ('retrait','Retrait'),
-        ('depot','Depot')
+        ('depot','Depot'),
+        ('reception', 'Réception')
     ]
     choix_statut = [
         ('en attente','En attente'),
