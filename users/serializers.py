@@ -7,7 +7,10 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class userSerializer(serializers.ModelSerializer):
     # password = serializers.CharField(write_only=True, validators=[validate_password])
-
+    password = serializers.CharField(
+        write_only=True,
+        validators=[validate_password]
+    )
     class Meta:
         model = user
         fields = [
@@ -16,7 +19,7 @@ class userSerializer(serializers.ModelSerializer):
             'NNI',
             'nb_telephone',
             'password',
-            'type_user'
+            
         ]
 
     def create(self, validated_data):
@@ -26,7 +29,7 @@ class userSerializer(serializers.ModelSerializer):
             name=validated_data['name'],
             prenom=validated_data['prenom'],
             NNI=validated_data['NNI'],
-            type_user=validated_data['type_user'],
+            type_user="client"
         )
         wallet.objects.create(user=user_instance)
         return user_instance
@@ -46,7 +49,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_solde(self, obj):
         wallet_instance = getattr(obj, 'wallet', None)
-        return getattr(wallet_instance, 'solde', None) if wallet_instance else None
-
-
+        if wallet_instance is None :
+            return None
+        return wallet_instance.solde
 

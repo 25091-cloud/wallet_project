@@ -1,22 +1,40 @@
-from django.shortcuts import render
+from rest_framework import status, permissions
 from rest_framework.response import Response
-from rest_framework import status, generics, permissions
 from rest_framework.views import APIView
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .serializers import userSerializer , LoginSerializer , ProfileSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+from .serializers import (
+    userSerializer,
+    LoginSerializer,
+    ProfileSerializer,
+)
+
 
 class RegisterUserView(APIView):
-    def post(self , request ):
-        serialiser = userSerializer(data=request.data)
-        if serialiser.is_valid():
-            new_user = serialiser.save()
-            return Response({"user_id": new_user.user_id}, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serialiser.errors, status=status.HTTP_400_BAD_REQUEST)
+    permission_classes = [permissions.AllowAny]
 
+    def post(self, request):
+        serializer = userSerializer(data=request.data)
+
+        if serializer.is_valid():
+            new_user = serializer.save()
+
+            return Response(
+                {
+                    "message": "Utilisateur créé avec succès.",
+                    "user_id": new_user.user_id,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 class LoginView(TokenObtainPairView):
+    permission_classes = [permissions.AllowAny]
     serializer_class = LoginSerializer
 
 
@@ -25,23 +43,23 @@ class ProfileView(APIView):
 
     def get(self, request):
         serializer = ProfileSerializer(request.user)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request):
-        serializer = ProfileSerializer(request.user, data=request.data)
+        serializer = ProfileSerializer(
+            request.user,
+            data=request.data,
+            partial=True,
+        )
+
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK,
+            )
 
-
-
-
-
-
-
-
-
-
-
-
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
